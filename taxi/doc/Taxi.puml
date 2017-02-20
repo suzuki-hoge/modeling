@@ -1,0 +1,106 @@
+@startuml
+package service {
+  class PickUpService {
+    Either[BusinessError, Void] apply(PickUpPoint, UserName)
+    pickUp(TaxiId)
+  }
+}
+
+package domain {
+  package taxi_management {
+    class TaxiDomainService {
+      Either[BusinessError, EmptyTaxi] closestEmpty(List<EmptyTaxi>, PickUpPoint)
+    }
+
+    package repository {
+      class EmptyTaxiRepository {
+        List<EmptyTaxi> findAll()
+      }
+
+      class ReservedTaxiRepository {
+        ReservedTaxi findOne(TaxiId)
+        save(ReservedTaxi)
+      }
+
+      class RiddenTaxiRepository {
+        save(RiddenTaxi)
+      }
+    }
+
+    PickUpService -left-> TaxiDomainService
+    PickUpService -left-> EmptyTaxiRepository
+    PickUpService -left-> ReservedTaxiRepository
+    PickUpService -left-> RiddenTaxiRepository
+  }
+
+  package taxi {
+    class TaxiId
+
+    package empty_taxi{
+      class EmptyTaxi {
+        Distance howFar(PickUpPoint)
+        ReservedTaxi reserve(PickUpPoint, UserName)
+      }
+
+      class CurrentPoint {
+        Distance howFar(PickUpPoint)
+      }
+
+      EmptyTaxi -down->"1" CurrentPoint
+    }
+
+    package reserved_taxi{
+      class ReservedTaxi {
+        RiddenTaxi ridden(DropOffPoint)
+      }
+
+      class PickUpPoint
+      ReservedTaxi -down->"1" PickUpPoint
+    }
+    package ridden_taxi{
+      class RiddenTaxi {
+      }
+
+      class DropOffPoint
+
+      RiddenTaxi -down->"1" DropOffPoint
+    }
+
+    EmptyTaxi -right-> ReservedTaxi
+    ReservedTaxi -right-> RiddenTaxi
+
+    EmptyTaxi -up-> TaxiId
+    ReservedTaxi -up-> TaxiId
+    RiddenTaxi -up-> TaxiId
+
+    TaxiDomainService -left-> EmptyTaxi
+  }
+
+  package road {
+    class Point {
+      int value
+    }
+
+    class Distance {
+      int value
+    }
+  }
+
+  package user {
+    class UserName
+  }
+
+  ReservedTaxi -left->"1" UserName
+
+  CurrentPoint -down->"1" Point
+  PickUpPoint -down->"1" Point
+  DropOffPoint -down->"1" Point
+
+  package error {
+    class BusinessError {
+      String value
+    }
+  }
+}
+
+@enduml
