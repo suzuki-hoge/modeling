@@ -13,17 +13,21 @@ package domain {
     }
 
     package repository {
-      class EmptyTaxiRepository {
+      interface EmptyTaxiRepository {
         List<EmptyTaxi> findAll()
       }
 
-      class ReservedTaxiRepository {
+      interface ReservedTaxiRepository {
         ReservedTaxi findOne(TaxiId)
         save(ReservedTaxi)
       }
 
-      class RiddenTaxiRepository {
+      interface RiddenTaxiRepository {
         save(RiddenTaxi)
+      }
+
+      interface NoticeRepository {
+        reserve(ReservedTaxi)
       }
     }
 
@@ -31,6 +35,7 @@ package domain {
     PickUpService -left-> EmptyTaxiRepository
     PickUpService -left-> ReservedTaxiRepository
     PickUpService -left-> RiddenTaxiRepository
+    PickUpService -left-> NoticeRepository
   }
 
   package taxi {
@@ -103,6 +108,8 @@ package domain {
       String value
     }
   }
+
+  TaxiDomainService --> BusinessError
 }
 
 @enduml

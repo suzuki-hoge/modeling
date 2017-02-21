@@ -4,7 +4,7 @@ import domain.taxi.TaxiId
 import domain.taxi.empty_taxi.{CurrentPoint, EmptyTaxi}
 import domain.taxi.reserved_taxi.{PickUpPoint, ReservedTaxi}
 import domain.taxi.ridden_taxi.RiddenTaxi
-import domain.taxi_management.repository.{EmptyTaxiRepository, ReservedTaxiRepository, RiddenTaxiRepository}
+import domain.taxi_management.repository.{EmptyTaxiRepository, NoticeRepository, ReservedTaxiRepository, RiddenTaxiRepository}
 import domain.user.UserName
 import org.scalatest.FunSuite
 import service.PickUpService
@@ -21,6 +21,9 @@ class PickUpServiceTest extends FunSuite {
   val riddenTaxiRepository = new RiddenTaxiRepository {
     override def save(taxi: RiddenTaxi) = Unit
   }
+  val noticeRepository = new NoticeRepository {
+    override def reserve(taxi: ReservedTaxi) = Unit
+  }
 
   test("ok") {
     val taxi1 = EmptyTaxi(TaxiId(1), CurrentPoint(Point(3)))
@@ -33,7 +36,7 @@ class PickUpServiceTest extends FunSuite {
       override def findAll() = taxis
     }
 
-    val service = PickUpService(emptyTaxiRepository, reservedTaxiRepository, riddenTaxiRepository)
+    val service = PickUpService(emptyTaxiRepository, reservedTaxiRepository, riddenTaxiRepository, noticeRepository)
 
     val exp: Either[BusinessError, Unit] = Right(Unit)
 
@@ -49,7 +52,7 @@ class PickUpServiceTest extends FunSuite {
       override def findAll() = taxis
     }
 
-    val service = PickUpService(emptyTaxiRepository, reservedTaxiRepository, riddenTaxiRepository)
+    val service = PickUpService(emptyTaxiRepository, reservedTaxiRepository, riddenTaxiRepository, noticeRepository)
 
     val exp: Either[BusinessError, Unit] = Left(BusinessError("空車がひとつもありません"))
 
