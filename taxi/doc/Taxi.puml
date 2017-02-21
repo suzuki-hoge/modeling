@@ -2,7 +2,7 @@
 package service {
   class PickUpService {
     Either[BusinessError, Void] apply(PickUpPoint, UserName)
-    pickUp(TaxiId)
+    pickUp(TaxiId, DropOffPoint)
   }
 }
 
@@ -79,6 +79,8 @@ package domain {
   package road {
     class Point {
       int value
+
+      Distance diff(Point)
     }
 
     class Distance {
