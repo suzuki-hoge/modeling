@@ -1,0 +1,242 @@
+@startuml
+
+package domain {
+  package attribute {
+    class Id {
+      String value
+    }
+
+    class Class {
+      String value
+    }
+
+    class Href {
+      String value
+    }
+
+    class Value {
+      String value
+    }
+
+    class MaxLength {
+      Int value
+    }
+
+    class Name {
+      String value
+    }
+  }
+
+  package element {
+    package block_element {
+      interface BlockElement
+
+      class Div {
+        <Id> id
+        [Class] classes
+        [AllElement] elements
+      }
+
+      class P {
+        <Id> id
+        [Class] classes
+        [ElementWithoutBlockElement] elements
+      }
+
+      package table {
+        class Table {
+          <Id> id
+          [Class] classes
+        }
+
+        class Thead {
+          <Id> id
+          [Class] classes
+          Tr<Th> header
+        }
+
+        class Tbody {
+          <Id> id
+          [Class] classes
+          [Tr<Td>] data
+        }
+
+        class Tr<T extends RowElement> {
+          <Id> id
+          [Class] classes
+          [T] elements
+        }
+
+        interface RowElement
+
+        class Th {
+          <Id> id
+          [Class] classes
+          [AllElement] elements
+        }
+
+        class Td {
+          <Id> id
+          [Class] classes
+          [AllElement] elements
+        }
+
+        Table -down->"0..1" Thead
+        Table -down->"0..1" Tbody
+        Table -down->"*"    Tr
+
+        Thead -down->"1..*" Tr
+        Tbody -down->"1..*" Tr
+
+        Tr -down->"1..*" RowElement
+
+        Th -up-|> RowElement
+        Td -up-|> RowElement
+      }
+
+      Div   -up-|> BlockElement
+      P     -up-|> BlockElement
+      Table -up-|> BlockElement
+    }
+
+    package inline_element {
+      interface InlineElement
+
+      class Span {
+        <Id> id
+        [Class] classes
+        [ElementWithoutBlockElement] elements
+      }
+
+      class A {
+        <Id> id
+        [Class] classes
+        [ElementWithoutBlockElement] elements
+      }
+
+      class Br {
+        <Id> id
+        [Class] classes
+      }
+
+      package input {
+        class InputText {
+          <Id> id
+          [Class] classes
+          Name name
+          Value value
+        }
+
+        class InputCheckBox {
+          <Id> id
+          [Class] classes
+          Name name
+          Value value
+          Check check
+        }
+
+        class InputRadios {
+          Name name
+        }
+
+        class InputRadio {
+          <Id> id
+          [Class] classes
+          Value value
+          Check check
+        }
+
+        Enum Check {
+          Checked
+          NotChecked
+        }
+
+        InputText     -up-|> InlineElement
+        InputCheckBox -up-|> InlineElement
+        InputRadios   -up-|> InlineElement
+
+        InputCheckBox -down-> Check
+
+        InputRadios -down->"2..*" InputRadio
+        InputRadio -down-> Check
+      }
+
+      Span -up-|> InlineElement
+      A    -up-|> InlineElement
+      Br   -up-|> InlineElement
+    }
+
+    package text {
+      class Text
+    }
+
+    interface ElementWithoutBlockElement
+
+    InlineElement -up-|> ElementWithoutBlockElement
+    Text          -up-|> ElementWithoutBlockElement
+
+    interface AllElement {
+      + String toString(Indent)
+      + [AllElement] find(TagNameCondition)
+      + [AllElement] find(ClassCondition)
+      # Bool match(TagNameCondition)
+      # Bool match(ClassCondition)
+    }
+
+    BlockElement               -up-|> AllElement
+    ElementWithoutBlockElement -up-|> AllElement
+  }
+
+  package list {
+    class AtLeastOne<T> {
+      [T] values
+      - AtLeastOne([T])
+      + {static} of(T, T...)
+    }
+
+    class AtLeastTwo<T> {
+      [T] values
+      - AtLeastTwo([T])
+      + {static} of(T, T, T...)
+    }
+  }
+
+  package string_convert {
+    class TagConverter {
+      Indent indent
+      TagName tagName
+      Id id
+      [Class] classes
+      + TagConverter(Indent, TagName, Id, [Class])
+      + {static} open()
+      + {static} noClose()
+      + {static} open(Href)
+      + {static} noClose(Name, Value)
+      + {static} noClose(Name, Value, Check)
+      + {static} close()
+    }
+
+    class Indent {
+      - Int width
+      - String char
+      - Indent(Int, String)
+      + {static} Indent init(String)
+      + String toString()
+      + Indent deeply()
+    }
+  }
+
+  package condition {
+    class TagNameCondition {
+      - TagName value
+      + Bool match(TagName)
+    }
+
+    class ClassCondition {
+      - Class value
+      + Bool match([Class])
+    }
+  }
+}
+
+@enduml
